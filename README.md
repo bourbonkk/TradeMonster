@@ -1,2 +1,141 @@
 # TradeMonster
-An advanced quantitative trading system repository powered by state-of-the-art algorithms and data analytics. Dive in to harness the power of machine learning and statistical models for unparalleled market insights and trading strategies. Open-sourced for the global trading community
+
+최신 알고리즘과 데이터 분석 기술로 구동되는 고급 퀀트 트레이딩 시스템 저장소입니다. 머신러닝과 통계 모델을 활용하여 탁월한 시장 통찰력과 트레이딩 전략을 제공합니다. 글로벌 트레이딩 커뮤니티를 위해 오픈소스로 공개되었습니다.
+
+---
+
+## 🌎 프로젝트 개요
+
+TradeMonster는 경기 사이클 분석과 거래량 기반 신호 생성을 중심으로 한 섹터 기반 ETF 로테이션 전략을 지원하는 종합 퀀트 트레이딩 프레임워크입니다.
+
+주요 특징:
+- ✅ 미국과 한국 시장에 특화된 경기 사이클 탐지
+- ✅ 거시경제 국면에 따른 섹터 ETF 선택
+- ✅ 거래량, 가격 모멘텀, OBV 기반 신호 생성
+- ✅ 변동성과 유동성 필터링을 통한 리스크 관리
+- ✅ 모듈형 설계로 확장성과 백테스팅 용이
+
+---
+
+## 📉 경기 사이클 모델
+
+시장을 다섯 가지 핵심 국면으로 구분합니다:
+
+| 국면 | 설명 |
+|:-----|:----|
+| 초기 회복 | 침체 이후 반등, 저금리, 재정 부양 |
+| 초기 확장 | 소비 및 투자 증가, 안정적 성장 |
+| 본격 확장 | 소비 급증, 노동시장 강세, 인플레이션 상승 |
+| 과열기 | 과열 우려, 공격적 금리 인상 |
+| 침체기 | 소비 감소, 투자 위축, 실업률 상승 |
+
+각 국면별로 역사적으로 강했던 섹터로 로테이션 전략을 구성합니다.
+
+---
+
+## 🌐 섹터 강세 매핑
+
+**미국 섹터 강세:**
+
+| 경기 국면 | 강세 섹터 |
+|:----------|:---------|
+| 초기 회복 | 소비재, 산업재, 기술 |
+| 본격 확장 | 기술, 금융, 통신 |
+| 과열기 | 에너지, 소재 |
+| 침체기 | 필수소비재, 헬스케어, 유틸리티 |
+
+**한국 섹터 강세:**
+
+| 경기 국면 | 강세 섹터 |
+|:----------|:---------|
+| 초기 회복 | 반도체, 자동차, 건설 |
+| 본격 확장 | IT, 금융, 소비재 |
+| 과열기 | 에너지화학, 철강, 소재 |
+| 침체기 | 필수소비재, 통신, 유틸리티, 바이오 |
+
+---
+
+## 📊 핵심 구성 요소
+
+### ETFSectors 테이블
+- ETF 기본 정보 관리
+- 컬럼: `etf_id`, `symbol`, `name`, `sector`, `description`, `expense_ratio`, `inception_date`, `assets_under_management`, `last_updated`
+
+### ETFComponents 테이블
+- ETF 구성 종목 정보 관리
+- 컬럼: `component_id`, `etf_id`, `stock_symbol`, `stock_name`, `weight_percentage`, `sector`, `industry`, `last_updated`
+
+### PriceData 테이블
+- 가격 및 거래량 데이터 관리
+- 컬럼: `price_id`, `symbol`, `date`, `open`, `high`, `low`, `close`, `adjusted_close`, `volume`, `is_etf`
+
+### MarketData 테이블
+- 주요 경제 지표 데이터 관리
+- 컬럼: `market_data_id`, `date`, `indicator_name`, `indicator_value`
+
+---
+
+## 🔢 거래량 신호 생성
+
+클래스: `VolumeSignalGenerator`
+
+주요 기능:
+- 가격 및 거래량 데이터 로드
+- 이동평균, OBV, 변동성 지표 계산
+- 고거래량 돌파 및 추세 확인 신호 생성
+- 매수/매도 신호 조건:
+  - 상승 추세 + 거래량 급증 + OBV 상승
+  - 하락 추세 + 거래량 급증 + OBV 하락
+
+---
+
+## 🚀 사용 기술 스택
+- Python 3.11+
+- Pandas, NumPy
+- SQLAlchemy ORM
+- (선택) Scikit-learn (특징 엔지니어링)
+- (선택) TensorFlow / PyTorch (예측 모델링)
+
+---
+
+## 📚 시작하기
+
+```bash
+# 레포지토리 클론
+git clone https://github.com/yourusername/trade-monster.git
+cd trade-monster
+
+# 의존성 설치
+pip install -r requirements.txt
+
+# 데이터베이스 및 환경 변수 설정 후
+# ETF 로테이션 전략 구축 시작!
+```
+
+---
+
+## 🚀 개발 로드맵
+- [x] 경기 국면 탐지 모델 개발
+- [x] 거래량 기반 신호 생성기 개발
+- [ ] 머신러닝 기반 국면 예측 모델 개발 (진행 중)
+- [ ] 백테스팅 모듈 완성
+- [ ] 대시보드 시각화 개발
+
+---
+
+## 👨‍💼 기여하기
+
+퀀트, 데이터 과학자, 개발자 여러분의 기여를 환영합니다. 이슈 제기, 기능 요청, PR 제출 모두 가능합니다!
+
+---
+
+## 💪 라이선스
+
+본 프로젝트는 MIT 라이선스 하에 오픈소스로 공개되어 있습니다.
+
+---
+
+## 🚀 함께 혁신합시다
+
+경제적 직관, 데이터 과학, 트레이딩 알고리즘을 결합하여 TradeMonster와 함께 섹터 로테이션 투자를 혁신해보세요!
+
