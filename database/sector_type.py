@@ -1,60 +1,6 @@
 import enum
 
 
-class KRSectorType(enum.Enum):
-    SEMICONDUCTOR = "반도체"
-    BANK = "은행"
-    AUTOMOBILE = "자동차"
-    ENERGY_CHEMICAL = "에너지화학"
-    BIO = "바이오"
-    FINANCE = "금융"
-    IT = "IT"
-    HEALTHCARE = "헬스케어"
-    CONSTRUCTION = "건설"
-    STEEL_CHEMICAL = "철강화학"
-    DISTRIBUTION = "유통"
-    TELECOMMUNICATION = "통신"
-    ENTERTAINMENT = "엔터테인먼트"
-    TRANSPORTATION = "운송"
-    FOOD_BEVERAGE = "식음료"
-    MACHINERY = "기계"
-    INSURANCE = "보험"
-
-    @classmethod
-    def get_by_name(cls, name):
-        for sector in cls:
-            if sector.value == name:
-                return sector
-        return None
-
-
-import enum
-
-
-class USSectorType(enum.Enum):
-    TECHNOLOGY = "Technology"
-    HEALTHCARE = "Healthcare"
-    FINANCIALS = "Financials"  # 보통 Financials (복수형)
-    ENERGY = "Energy"
-    CONSUMER_STAPLES = "Consumer Staples"
-    CONSUMER_DISCRETIONARY = "Consumer Discretionary"
-    INDUSTRIALS = "Industrials"
-    MATERIALS = "Materials"
-    UTILITIES = "Utilities"
-    REAL_ESTATE = "Real Estate"
-    COMMUNICATION_SERVICES = "Communication Services"  # 명확히 표현
-    # 추가
-    INFORMATION_TECHNOLOGY = "Information Technology"  # Technology와 겹칠 수 있지만 명확히 분리하는 경우 있음
-
-    @classmethod
-    def get_by_name(cls, name):
-        """문자열 이름으로 Enum 값 찾기"""
-        for sector in cls:
-            if sector.value.lower() == name.lower():
-                return sector
-        return None
-
-
 class GlobalSectorType(enum.Enum):
     # 정보 기술 관련 섹터
     TECHNOLOGY = "Technology"  # 기술 섹터 전체
@@ -119,3 +65,10 @@ class GlobalSectorType(enum.Enum):
     SHIPPING = "Shipping & Logistics"  # 해운 및 물류
     DEFENSE = "Defense"  # 방위산업
     EDUCATION = "Education"  # 교육
+
+    @classmethod
+    def get_by_name(cls, name):
+        for sector in cls:
+            if sector.value == name:
+                return sector
+        return None

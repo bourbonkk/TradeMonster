@@ -1,106 +1,131 @@
-from sqlalchemy import create_engine, Column, Integer, String, Float, Date, ForeignKey, Boolean, Enum
+from sqlalchemy import Column, Integer, String, Text, Numeric, Date, ForeignKey, BigInteger, Boolean
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
-import datetime
-
-from database.sector_type import GlobalSectorType
+from sqlalchemy.sql import func
+from sqlalchemy.dialects.postgresql import JSONB, TIMESTAMPTZ
 
 Base = declarative_base()
 
 
-class ETFSector(Base):
-    """
-    섹터 ETF 자체에 대한 기본 정보를 저장합니다.
-    심볼, 이름, 섹터, 비용 비율 등의 메타데이터가 포함됩니다.
-    """
+class EtfSector(Base):
     __tablename__ = 'etf_sectors'
 
     etf_id = Column(Integer, primary_key=True)
-    symbol = Column(String, unique=True, nullable=False)
-    name = Column(String, nullable=False)
-    sector = Column(String, nullable=False)
-    market = Column(String, nullable=False)  # 'US' 또는 'KR'
-    global_sector = Column(Enum(GlobalSectorType), nullable=True)  # 통합 분류
-    description = Column(String)
-    expense_ratio = Column(Float)
+    symbol = Column(String(10), nullable=False, unique=True)
+    name = Column(String(100), nullable=False)
+    country = Column(String(30))
+    sector = Column(String(50))
+    description = Column(Text)
+    expense_ratio = Column(Numeric(5, 4))
     inception_date = Column(Date)
-    assets_under_management = Column(Float)
-    last_updated = Column(Date, default=datetime.datetime.now().date())
-
-    components = relationship("ETFComponent", back_populates="etf")
-    prices = relationship("PriceData", back_populates="etf",
-                          primaryjoin="and_(ETFSector.symbol==PriceData.symbol, PriceData.is_etf==True)")
+    assets_under_management = Column(Numeric(20, 2))
+    last_updated = Column(TIMESTAMPTZ, default=func.current_timestamp())
 
 
-class ETFComponent(Base):
-    """
-    ETF에 포함된 구성 종목 정보를 저장합니다.
-    어떤 종목이 어떤 ETF에 얼마만큼의 비중으로 포함되어 있는지 관리합니다.
-    """
+class EtfComponent(Base):
     __tablename__ = 'etf_components'
 
     component_id = Column(Integer, primary_key=True)
     etf_id = Column(Integer, ForeignKey('etf_sectors.etf_id'))
-    stock_symbol = Column(String, nullable=False)
-    stock_name = Column(String)
-    weight_percentage = Column(Float)
-    sector = Column(String)
-    industry = Column(String)
-    last_updated = Column(Date, default=datetime.datetime.now().date())
+    stock_symbol = Column(String(10), nullable=False)
+    stock_name = Column(String(100), nullable=False)
+    weight_percentage = Column(Numeric(7, 4))
+    sector = Column(String(50))
+    industry = Column(String(50))
+    last_updated = Column(TIMESTAMPTZ, default=func.current_timestamp())
 
-    etf = relationship("ETFSector", back_populates="components")
+
+class MarketMetadata(Base):
+    __tablename__ = 'market_metadata'
+
+    indicator_id = Column(Integer, primary_key=True)
+    indicator_name = Column(String(50), nullable=False)
+    country = Column(String(30))
+    source = Column(String(50), nullable=False)
+    description = Column(Text)
+    last_updated = Column(TIMESTAMPTZ, default=func.current_timestamp())
+
+
+class MarketTimeseries(Base):
+    __tablename__ = 'market_timeseries'
+
+    indicator_id = Column(Integer, ForeignKey('market_metadata.indicator_id'), primary_key=True, nullable=False)
+    date = Column(Date, primary_key=True, nullable=False)
+    indicator_value = Column(Numeric(20, 6))
+    last_updated = Column(TIMESTAMPTZ, default=func.current_timestamp())
+
+    # Note: TimescaleDB hypertable configuration is handled at the database level
 
 
 class PriceData(Base):
-    """
-    가격 및 거래량 데이터를 저장합니다.
-    ETF와 구성 종목 모두의 가격/거래량이 이 테이블에 저장됩니다.
-    is_etf 필드로 ETF인지 개별 종목인지 구분합니다.
-    """
     __tablename__ = 'price_data'
 
-    price_id = Column(Integer, primary_key=True)
-    symbol = Column(String, nullable=False)
-    date = Column(Date, nullable=False)
-    open = Column(Float)
-    high = Column(Float)
-    low = Column(Float)
-    close = Column(Float)
-    adjusted_close = Column(Float)
-    volume = Column(Float)
-    is_etf = Column(Boolean, default=False)
+    symbol = Column(String(10), primary_key=True)
+    time = Column(TIMESTAMPTZ, primary_key=True)
+    open = Column(Numeric(20, 6))
+    high = Column(Numeric(20, 6))
+    low = Column(Numeric(20, 6))
+    close = Column(Numeric(20, 6))
+    adjusted_close = Column(Numeric(20, 6))
+    volume = Column(BigInteger)
+    is_etf = Column(Boolean)
+    country = Column(String(30))
 
-    etf = relationship("ETFSector", back_populates="prices",
-                       primaryjoin="and_(PriceData.symbol==ETFSector.symbol, PriceData.is_etf==True)")
-
-
-class MarketData(Base):
-    """
-    경제 지표 등 추가 시장 데이터를 저장합니다.
-    """
-    __tablename__ = 'market_data'
-
-    market_data_id = Column(Integer, primary_key=True)
-    date = Column(Date, nullable=False)
-    indicator_name = Column(String, nullable=False)
-    indicator_value = Column(Float)
+    # Note: TimescaleDB hypertable configuration is handled at the database level
 
 
-class RelativeStrength(Base):
-    """
-    계산된 상대 강도 값을 저장합니다.
-    """
-    __tablename__ = 'relative_strength'
+class EconomicCycle(Base):
+    __tablename__ = 'economic_cycle'
 
-    rs_id = Column(Integer, primary_key=True)
-    date = Column(Date, nullable=False)
-    etf_symbol = Column(String, nullable=False)
-    benchmark_symbol = Column(String, nullable=False)  # 예: 'SPY' 또는 '005930' (삼성전자)
-    relative_strength = Column(Float)
+    cycle_id = Column(Integer, primary_key=True)
+    start_date = Column(Date, nullable=False)
+    end_date = Column(Date)
+    phase = Column(String(15), nullable=False)
+    description = Column(Text)
+    confidence = Column(Numeric(5, 2))
+    last_updated = Column(TIMESTAMPTZ, default=func.current_timestamp())
 
 
-# 데이터베이스 생성 함수
-def create_database(db_path='sqlite:///data/sector_etf.db'):
-    engine = create_engine(db_path)
-    Base.metadata.create_all(engine)
-    return engine
+class SectorPerformance(Base):
+    __tablename__ = 'sector_performance'
+
+    performance_id = Column(Integer, primary_key=True)
+    phase = Column(String(15), nullable=False)
+    sector = Column(String(50))
+    country = Column(String(30), nullable=False)
+    historical_return = Column(Numeric(8, 4))
+    volatility = Column(Numeric(8, 4))
+    sharpe_ratio = Column(Numeric(8, 4))
+    success_rate = Column(Numeric(5, 2))
+    last_updated = Column(TIMESTAMPTZ, default=func.current_timestamp())
+
+
+class TradingSignal(Base):
+    __tablename__ = 'trading_signals'
+
+    signal_id = Column(Integer, primary_key=True)
+    symbol = Column(String(10), nullable=False)
+    time = Column(TIMESTAMPTZ, primary_key=True, nullable=False)
+    signal_type = Column(String(20), nullable=False)
+    signal_strength = Column(Numeric(5, 2))
+    price = Column(Numeric(20, 6))
+    volume = Column(BigInteger)
+    strategy_name = Column(String(50))
+    rationale = Column(Text)
+
+    # Note: TimescaleDB hypertable configuration is handled at the database level
+
+
+class BacktestResult(Base):
+    __tablename__ = 'backtest_results'
+
+    backtest_id = Column(Integer, primary_key=True)
+    strategy_name = Column(String(50), nullable=False)
+    start_date = Column(Date, nullable=False)
+    end_date = Column(Date, nullable=False)
+    total_return = Column(Numeric(10, 4))
+    annualized_return = Column(Numeric(10, 4))
+    sharpe_ratio = Column(Numeric(8, 4))
+    max_drawdown = Column(Numeric(8, 4))
+    win_rate = Column(Numeric(5, 2))
+    parameters = Column(JSONB)
+    execution_time = Column(TIMESTAMPTZ, default=func.current_timestamp())

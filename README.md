@@ -90,7 +90,7 @@ TradeMonster는 경기 사이클 분석과 거래량 기반 신호 생성을 중
 ---
 
 ## 🚀 사용 기술 스택
-- Python 3.11+
+- Python 3.13
 - Pandas, NumPy
 - SQLAlchemy ORM
 - (선택) Scikit-learn (특징 엔지니어링)

@@ -1,6 +1,7 @@
 # 미국 ETF 매핑
 from database.sector_type import GlobalSectorType
 
+
 US_ETF_MAPPING = {
     'XLK': GlobalSectorType.TECHNOLOGY,  # Technology Select Sector SPDR (1998-12-16)
     'SMH': GlobalSectorType.SEMICONDUCTOR,  # VanEck Semiconductor ETF (2000-05-05, 현재 버전은 2011-12 리뉴얼)
