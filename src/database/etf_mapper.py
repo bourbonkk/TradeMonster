@@ -1,5 +1,5 @@
 # 미국 ETF 매핑
-from database.sector_type import GlobalSectorType
+from database import GlobalSectorType
 
 
 US_ETF_MAPPING = {

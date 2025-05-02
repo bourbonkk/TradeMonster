@@ -1,7 +1,8 @@
 from sqlalchemy import Column, Integer, String, Text, Numeric, Date, ForeignKey, BigInteger, Boolean
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from sqlalchemy.dialects.postgresql import JSONB, TIMESTAMPTZ
+from sqlalchemy.dialects.postgresql import JSONB, TIMESTAMP
 
 Base = declarative_base()
 
@@ -18,7 +19,10 @@ class EtfSector(Base):
     expense_ratio = Column(Numeric(5, 4))
     inception_date = Column(Date)
     assets_under_management = Column(Numeric(20, 2))
-    last_updated = Column(TIMESTAMPTZ, default=func.current_timestamp())
+    last_updated = Column(TIMESTAMP(timezone=True), default=func.current_timestamp())
+
+    # Relationship
+    components = relationship("EtfComponent", back_populates="etf")
 
 
 class EtfComponent(Base):
@@ -31,7 +35,10 @@ class EtfComponent(Base):
     weight_percentage = Column(Numeric(7, 4))
     sector = Column(String(50))
     industry = Column(String(50))
-    last_updated = Column(TIMESTAMPTZ, default=func.current_timestamp())
+    last_updated = Column(TIMESTAMP(timezone=True), default=func.current_timestamp())
+
+    # Relationship
+    etf = relationship("EtfSector", back_populates="components")
 
 
 class MarketMetadata(Base):
@@ -42,25 +49,35 @@ class MarketMetadata(Base):
     country = Column(String(30))
     source = Column(String(50), nullable=False)
     description = Column(Text)
-    last_updated = Column(TIMESTAMPTZ, default=func.current_timestamp())
+    last_updated = Column(TIMESTAMP(timezone=True), default=func.current_timestamp())
 
 
 class MarketTimeseries(Base):
     __tablename__ = 'market_timeseries'
+    __table_args__ = ({
+        'timescaledb_hypertable': {
+            'time_column_name': 'date'
+        }
+    })  # TimescaleDB hypertable configuration
 
     indicator_id = Column(Integer, ForeignKey('market_metadata.indicator_id'), primary_key=True, nullable=False)
     date = Column(Date, primary_key=True, nullable=False)
     indicator_value = Column(Numeric(20, 6))
-    last_updated = Column(TIMESTAMPTZ, default=func.current_timestamp())
+    last_updated = Column(TIMESTAMP(timezone=True), default=func.current_timestamp())
 
     # Note: TimescaleDB hypertable configuration is handled at the database level
 
 
 class PriceData(Base):
     __tablename__ = 'price_data'
+    __table_args__ = ({
+        'timescaledb_hypertable': {
+            'time_column_name': 'time'
+        }
+    })  # TimescaleDB hypertable configuration
 
     symbol = Column(String(10), primary_key=True)
-    time = Column(TIMESTAMPTZ, primary_key=True)
+    time = Column(TIMESTAMP(timezone=True), primary_key=True)
     open = Column(Numeric(20, 6))
     high = Column(Numeric(20, 6))
     low = Column(Numeric(20, 6))
@@ -82,7 +99,7 @@ class EconomicCycle(Base):
     phase = Column(String(15), nullable=False)
     description = Column(Text)
     confidence = Column(Numeric(5, 2))
-    last_updated = Column(TIMESTAMPTZ, default=func.current_timestamp())
+    last_updated = Column(TIMESTAMP(timezone=True), default=func.current_timestamp())
 
 
 class SectorPerformance(Base):
@@ -96,15 +113,15 @@ class SectorPerformance(Base):
     volatility = Column(Numeric(8, 4))
     sharpe_ratio = Column(Numeric(8, 4))
     success_rate = Column(Numeric(5, 2))
-    last_updated = Column(TIMESTAMPTZ, default=func.current_timestamp())
+    last_updated = Column(TIMESTAMP(timezone=True), default=func.current_timestamp())
 
 
 class TradingSignal(Base):
     __tablename__ = 'trading_signals'
 
-    signal_id = Column(Integer, primary_key=True)
+    signal_id = Column(Integer, autoincrement=True, primary_key=True)
     symbol = Column(String(10), nullable=False)
-    time = Column(TIMESTAMPTZ, primary_key=True, nullable=False)
+    time = Column(TIMESTAMP(timezone=True), primary_key=True, nullable=False)
     signal_type = Column(String(20), nullable=False)
     signal_strength = Column(Numeric(5, 2))
     price = Column(Numeric(20, 6))
@@ -128,4 +145,4 @@ class BacktestResult(Base):
     max_drawdown = Column(Numeric(8, 4))
     win_rate = Column(Numeric(5, 2))
     parameters = Column(JSONB)
-    execution_time = Column(TIMESTAMPTZ, default=func.current_timestamp())
+    execution_time = Column(TIMESTAMP(timezone=True), default=func.current_timestamp())

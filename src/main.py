@@ -5,12 +5,6 @@ from sqlalchemy.orm import sessionmaker
 from database.etf_mapper import US_ETF_MAPPING, BENCHMARKS
 from database.models import Base
 from collector.etf_collector import ETFCollector
-from analysis.relative_strength import RelativeStrengthAnalyzer
-from strategy.signals import VolumeSignalGenerator
-from strategy.backtesting import SectorRotationBacktester, SectorVolumeBacktester
-from visualization.charts import ETFAnalysisVisualizer
-import matplotlib.pyplot as plt
-import pandas as pd
 import os
 
 
@@ -23,8 +17,8 @@ def create_database(db_path='sqlite:///data/sector_etf.db'):
 
 def main():
     # 디렉토리 생성
-    os.makedirs('data', exist_ok=True)
-    os.makedirs('results', exist_ok=True)
+    os.makedirs('../data', exist_ok=True)
+    os.makedirs('../results', exist_ok=True)
 
     # 데이터베이스 초기화
     engine = create_database()

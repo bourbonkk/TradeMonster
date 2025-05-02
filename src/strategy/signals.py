@@ -1,6 +1,4 @@
 import pandas as pd
-import numpy as np
-from sqlalchemy import func
 from database.models import PriceData
 
 

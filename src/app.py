@@ -1,16 +1,12 @@
 from flask import Flask, render_template, jsonify
-from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-import pandas as pd
-import numpy as np
 import datetime
-import json
 import os
 
 from database.models import create_database
 from data_collection.etf_collector import ETFDataCollector
-from analysis.relative_strength import RelativeStrengthAnalyzer
-from strategy.signals import VolumeSignalGenerator
+from analysis import RelativeStrengthAnalyzer
+from strategy import VolumeSignalGenerator
 
 app = Flask(__name__)
 
