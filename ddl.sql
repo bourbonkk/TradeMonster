@@ -55,17 +55,17 @@ SELECT create_hypertable('market_timeseries', 'date');
 -- 가격 및 거래량 데이터 (시계열)
 CREATE TABLE price_data
 (
-    symbol         VARCHAR(10) NOT NULL,
-    time           TIMESTAMPTZ NOT NULL,
-    open           DECIMAL(20, 6),
-    high           DECIMAL(20, 6),
-    low            DECIMAL(20, 6),
-    close          DECIMAL(20, 6),
-    adjusted_close DECIMAL(20, 6),
-    volume         BIGINT,
-    is_etf         BOOLEAN,
-    country        VARCHAR(30),
-    PRIMARY KEY (symbol, time)
+    symbol         VARCHAR(10) NOT NULL, -- 종목 심볼
+    time           TIMESTAMPTZ NOT NULL, -- 시계열 데이터 시간
+    open           DECIMAL(20, 6),       -- 시가
+    high           DECIMAL(20, 6),       -- 고가
+    low            DECIMAL(20, 6),       -- 저가
+    close          DECIMAL(20, 6),       -- 종가
+    adjusted_close DECIMAL(20, 6),       -- 수정 종가
+    volume         BIGINT,               -- 거래량
+    is_etf         BOOLEAN,              -- ETF 여부
+    country        VARCHAR(30),          -- 국가
+    PRIMARY KEY (symbol, time)           -- 종목 심볼과 시간으로 복합 기본 키 설정
 );
 
 -- 하이퍼테이블로 변환
