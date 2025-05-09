@@ -1,7 +1,14 @@
+"""
+섹터 분류
+"""
 import enum
 
 
 class GlobalSectorType(enum.Enum):
+    """
+    글로벌 섹터 분류
+    """
+
     # 정보 기술 관련 섹터
     TECHNOLOGY = "Technology"  # 기술 섹터 전체
     SEMICONDUCTOR = "Semiconductor"  # 반도체
@@ -68,6 +75,9 @@ class GlobalSectorType(enum.Enum):
 
     @classmethod
     def get_by_name(cls, name):
+        """
+        섹터 이름으로 섹터 타입을 가져오는 메서드
+        """
         for sector in cls:
             if sector.value == name:
                 return sector

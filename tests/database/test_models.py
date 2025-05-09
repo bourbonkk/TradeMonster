@@ -8,8 +8,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import text
 
-from database.models import EtfSector, EtfComponent, MarketMetadata, MarketTimeseries, PriceData, TradingSignal, \
-    BacktestResult, EconomicCycle, SectorPerformance
+from database.models import (
+    EtfSector, EtfComponent, MarketMetadata, MarketTimeseries, PriceData, TradingSignal,
+    BacktestResult, EconomicCycle, SectorPerformance)
 
 
 def get_project_root():
@@ -39,6 +40,7 @@ def read_ddl_file():
 
 
 class TestDatabaseOperations(TestCase):
+    """데이터베이스 작업 테스트 클래스"""
 
     @classmethod
     def setUpClass(cls):
@@ -58,6 +60,11 @@ class TestDatabaseOperations(TestCase):
             conn.execute(text(sql_commands))
             conn.commit()
 
+    @classmethod
+    def tearDownClass(cls):
+        # 1. 컨테이너 종료
+        cls.postgres.stop()
+
     def setUp(self):
         # 각 테스트 시작 시 세션 생성
         self.session = self.Session()
@@ -67,6 +74,9 @@ class TestDatabaseOperations(TestCase):
         self.session.close()
 
     def test_etf_sector_insertion(self):
+        """
+        ETF 섹터 데이터 삽입 테스트
+        """
         # ETF 섹터 데이터 삽입 테스트
         spy = EtfSector(
             symbol='SPY',
@@ -88,6 +98,9 @@ class TestDatabaseOperations(TestCase):
         self.assertEqual(result.country, 'USA')
 
     def test_etf_component_insertion(self):
+        """
+        ETF 구성 종목 데이터 삽입 테스트
+        """
         # ETF 섹터 먼저 생성
         qqq = EtfSector(
             symbol='QQQ',
@@ -129,6 +142,9 @@ class TestDatabaseOperations(TestCase):
         self.assertEqual(qqq.components[1].stock_symbol, 'MSFT')
 
     def test_economic_cycle_insertion(self):
+        """
+        경제 사이클 데이터 삽입 테스트
+        """
         economic_cycle = EconomicCycle(
             start_date=datetime.date(2020, 1, 1),
             end_date=datetime.date(2022, 12, 31),
@@ -144,6 +160,9 @@ class TestDatabaseOperations(TestCase):
         self.assertEqual(result.confidence, Decimal('0.09'))
 
     def test_market_timeseries_insertion(self):
+        """
+        경제 지표 시계열 데이터 삽입 테스트
+        """
         # 경제 지표 메타데이터 생성
         gdp = MarketMetadata(
             indicator_name='GDP',
@@ -176,6 +195,9 @@ class TestDatabaseOperations(TestCase):
         self.assertEqual(results[0].indicator_value, Decimal('26140.00'))
 
     def test_price_data_insertion(self):
+        """
+        가격 데이터 삽입 및 쿼리 테스트
+        """
         # 가격 데이터 삽입
         yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
         today = datetime.datetime.now()
@@ -219,6 +241,9 @@ class TestDatabaseOperations(TestCase):
         self.assertEqual(result[0].close, Decimal('189.50'))
 
     def test_trading_signals_insertion(self):
+        """
+        트레이딩 신호 삽입 및 쿼리 테스트
+        """
         # 트레이딩 신호 추가
         now = datetime.datetime.now()
 
@@ -242,6 +267,9 @@ class TestDatabaseOperations(TestCase):
         self.assertEqual(result.strategy_name, 'Moving Average Crossover')
 
     def test_timescaledb_functions(self):
+        """
+        TimescaleDB 하이퍼테이블 및 기능 테스트
+        """
         # TimescaleDB 하이퍼테이블 확인 (SQL 직접 실행)
         result = self.session.execute(text("SELECT * FROM timescaledb_information.hypertables"))
         hypertables = result.fetchall()
@@ -255,6 +283,9 @@ class TestDatabaseOperations(TestCase):
         self.assertIn('trading_signals', hypertable_names)
 
     def test_backtest_results_insertion(self):
+        """
+        백테스트 결과 삽입 및 쿼리 테스트
+        """
         # 백테스트 결과 추가
         backtest = BacktestResult(
             strategy_name='Momentum Strategy',
@@ -281,6 +312,9 @@ class TestDatabaseOperations(TestCase):
         self.assertEqual(result.parameters['lookback_period'], 20)
 
     def test_sector_performance_insertion(self):
+        """
+        섹터 성과 데이터 삽입 및 쿼리 테스트
+        """
         # 섹터 성과 데이터 삽입
         sector_performance = SectorPerformance(
             phase='Expansion',

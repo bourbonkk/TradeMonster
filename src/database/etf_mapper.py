@@ -1,8 +1,10 @@
-# 미국 ETF 매핑
-from database import GlobalSectorType
+"""
+ETF 매핑을 위한 모듈입니다.
+"""
 
+from database.sector_type import GlobalSectorType
 
-US_ETF_MAPPING = {
+US_ETF_MAPPING: dict[str, GlobalSectorType] = {
     'XLK': GlobalSectorType.TECHNOLOGY,  # Technology Select Sector SPDR (1998-12-16)
     'SMH': GlobalSectorType.SEMICONDUCTOR,  # VanEck Semiconductor ETF (2000-05-05, 현재 버전은 2011-12 리뉴얼)
     'XLF': GlobalSectorType.FINANCIAL,  # Financial Select Sector SPDR (1998-12-16)
@@ -21,7 +23,7 @@ US_ETF_MAPPING = {
 }
 
 # 한국 ETF 매핑
-KR_ETF_MAPPING = {
+KR_ETF_MAPPING: dict[str, GlobalSectorType] = {
     '091170': GlobalSectorType.SEMICONDUCTOR,  # KODEX 반도체 (2008-11-24)
     '091160': GlobalSectorType.BANKING,  # KODEX 은행 (2008-11-24)
     '091180': GlobalSectorType.AUTOMOTIVE,  # KODEX 자동차 (2008-11-24)
@@ -40,8 +42,7 @@ KR_ETF_MAPPING = {
     '227550': GlobalSectorType.INDUSTRIALS,  # TIGER 200 산업재 (2016-12-22)
 }
 
-
-BENCHMARKS = {
+BENCHMARKS: dict[str, str] = {
     'US': 'SPY',  # S&P 500 ETF (상장일: 1993-01-29)
     'KR': '069500',  # KODEX 200 (상장일: 2002-10-14)
 }
