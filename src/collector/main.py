@@ -21,6 +21,6 @@ if __name__ == "__main__":
         collectors.run(
             symbol=symbol,
             sector=sector,
-            # start_time='20020101',
-            # end_time='20250101',
+            start_time='2002-01-01',
+            end_time='2025-05-11',
         )

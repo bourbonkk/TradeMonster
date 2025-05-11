@@ -80,7 +80,7 @@ class UsEtfComponentCollector(BaseCollector):
             return False
         return True
 
-    def transform(self, data: dict) -> list:
+    def transform(self, data: dict) -> list[EtfComponent]:
         """
         수집된 데이터를 변환하는 메서드
         """
@@ -108,7 +108,7 @@ class UsEtfComponentCollector(BaseCollector):
             transformed_components.append(component)
         return transformed_components
 
-    def save(self, data: list) -> bool:
+    def save(self, data: list[EtfComponent]) -> bool:
         try:
             self.db_session.add_all(data)
             self.db_session.commit()
