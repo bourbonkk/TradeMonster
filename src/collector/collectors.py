@@ -2,6 +2,7 @@
 컬렉터 클래스
 """
 from collector.etf.us_etf_collector import UsEtfCollector
+from collector.etf.us_etf_component_collector import UsEtfComponentCollector
 
 
 class Collectors:
@@ -13,6 +14,7 @@ class Collectors:
         self.config = config
         self.collectors = [
             UsEtfCollector(db_session),
+            UsEtfComponentCollector(db_session),
         ]
 
     def run(self, *args, **kwargs):
