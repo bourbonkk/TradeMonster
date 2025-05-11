@@ -3,6 +3,7 @@
 """
 from collector.etf.us_etf_collector import UsEtfCollector
 from collector.etf.us_etf_component_collector import UsEtfComponentCollector
+from collector.etf.us_etf_price_collector import UsEtfPriceCollector
 
 
 class Collectors:
@@ -15,6 +16,7 @@ class Collectors:
         self.collectors = [
             UsEtfCollector(db_session),
             UsEtfComponentCollector(db_session),
+            UsEtfPriceCollector(db_session),
         ]
 
     def run(self, *args, **kwargs):
