@@ -36,20 +36,26 @@ def convert_to_price_data(data: dict[str, pd.DataFrame], is_etf: bool, country: 
     return result
 
 
-class UsEtfPriceCollector(BaseCollector):
+class PriceHistoryCollector(BaseCollector):
     """
     미국 ETF의 가격 정보를 수집하는 클래스
     """
 
     def __init__(self, db_session: Session):
         self.db_session = db_session
-        self.is_etf = True
+        self.is_etf = False
         self.country = "US"
+        self.full_collection = False
 
     def collect(self, *args, **kwargs) -> dict[str, pd.DataFrame]:
         symbol = kwargs.get('symbol')
         start_time = kwargs.get('start_time')
         end_time = kwargs.get('end_time')
+        self.is_etf = kwargs.get('is_etf')
+        self.full_collection = kwargs.get('full_collection')
+        self.country = kwargs.get('country', 'US')
+
+        logger.info("Collecting data for %s from %s to %s", symbol, start_time, end_time)
 
         try:
             df = yf.download(
@@ -99,11 +105,14 @@ class UsEtfPriceCollector(BaseCollector):
 
     def save(self, data: list[PriceData]) -> bool:
         try:
-            for row in data:
-                # 기존에 같은 (symbol, time) 데이터가 있는지 확인
-                exists = self.db_session.query(PriceData).filter_by(symbol=row.symbol, time=row.time).first()
-                if not exists:
-                    self.db_session.add(row)
+            if self.full_collection:
+                self.db_session.add_all(data)
+            else:
+                for row in data:
+                    # 기존에 같은 (symbol, time) 데이터가 있는지 확인
+                    exists = self.db_session.query(PriceData).filter_by(symbol=row.symbol, time=row.time).first()
+                    if not exists:
+                        self.db_session.add(row)
 
             self.db_session.commit()
             logger.info("Saved %d rows to price_data.", len(data))
