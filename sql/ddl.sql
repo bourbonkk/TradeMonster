@@ -31,12 +31,23 @@ CREATE TABLE etf_components
 -- 경제 지표 메타데이터
 CREATE TABLE market_metadata
 (
-    indicator_id   SERIAL PRIMARY KEY,   -- 경제 지표 ID
-    indicator_name VARCHAR(50) NOT NULL, -- 경제 지표 이름
-    country        VARCHAR(30),          -- 국가
-    source         VARCHAR(50) NOT NULL, -- 데이터 출처
-    description    TEXT,                 -- 지표 설명
-    last_updated   TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    indicator_id       SERIAL PRIMARY KEY,                   -- 경제 지표 ID
+    indicator_name     VARCHAR(50) NOT NULL,                 -- 경제 지표 이름
+    country            VARCHAR(30),                          -- 국가
+    source             VARCHAR(50) NOT NULL,                 -- 데이터 출처
+    description        TEXT,                                 -- 지표 설명
+
+    external_series_id VARCHAR(100),                         -- 외부 API 시리즈 식별자 (e.g. FRED의 GDPC1 등)
+    frequency          VARCHAR(10),                          -- 데이터 빈도 (D=일간, M=월간, Q=분기, A=연간 등)
+    unit               VARCHAR(30),                          -- 값의 단위 (percent, index, USD, bps 등)
+    release_lag_days   INTEGER,                              -- 발표 지연 일수 (평균)
+    category           VARCHAR(50),                          -- 지표 분류 (growth, inflation, labor, survey 등)
+    source_url         TEXT,                                 -- 원본 데이터 페이지 URL
+    next_release_date  DATE,                                 -- 다음 발표(예정) 일자
+    is_active          BOOLEAN     DEFAULT TRUE,             -- 활성 여부 (더 이상 갱신하지 않으면 FALSE)
+    notes              TEXT,                                 -- 특이사항 (계산 방식, 계절조정 여부 등)
+
+    last_updated       TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP -- 메타데이터 최종 수정 시각
 );
 
 -- 경제 지표 시계열 데이터
@@ -51,6 +62,140 @@ CREATE TABLE market_timeseries
 
 -- 하이퍼테이블로 변환
 SELECT create_hypertable('market_timeseries', 'date');
+
+INSERT INTO market_metadata
+(indicator_name,
+ country,
+ source,
+ description,
+ external_series_id,
+ frequency,
+ unit,
+ release_lag_days,
+ category,
+ source_url,
+ next_release_date,
+ is_active,
+ notes)
+VALUES
+    -- 1) 실질 GDP (분기, 연율)
+    ('Real GDP (annualized quarterly)',
+     'US',
+     'FRED',
+     'Real Gross Domestic Product, seasonally adjusted annual rate',
+     'GDPC1',
+     'Q',
+     'index',
+     30,
+     'growth',
+     'https://fred.stlouisfed.org/series/GDPC1',
+     NULL,
+     TRUE,
+     '계절조정된 분기 연율치'),
+
+    -- 2) 실업률
+    ('Unemployment Rate',
+     'US',
+     'FRED',
+     'Civilian Unemployment Rate',
+     'UNRATE',
+     'M',
+     'percent',
+     5,
+     'labor',
+     'https://fred.stlouisfed.org/series/UNRATE',
+     NULL,
+     TRUE,
+     '월간 발표'),
+
+    -- 3) ISM 제조업 PMI
+    ('ISM Manufacturing PMI',
+     'US',
+     'FRED',
+     'Institute for Supply Management Manufacturing PMI',
+     'NAPM',
+     'M',
+     'index',
+     3,
+     'survey',
+     'https://fred.stlouisfed.org/series/NAPM',
+     NULL,
+     TRUE,
+     'ISM 제조업 PMI'),
+
+    -- 4) 소비자물가지수 (CPI-U)
+    ('Consumer Price Index (CPI-U)',
+     'US',
+     'FRED',
+     'Consumer Price Index for All Urban Consumers: All Items',
+     'CPIAUCSL',
+     'M',
+     'index',
+     15,
+     'inflation',
+     'https://fred.stlouisfed.org/series/CPIAUCSL',
+     NULL,
+     TRUE,
+     '계절조정 여부 확인 필요'),
+
+    -- 5) 연방기금금리
+    ('Federal Funds Rate',
+     'US',
+     'FRED',
+     'Effective Federal Funds Rate',
+     'FEDFUNDS',
+     'D',
+     'percent',
+     1,
+     'policy',
+     'https://fred.stlouisfed.org/series/FEDFUNDS',
+     NULL,
+     TRUE,
+     '연방 기금 금리'),
+
+    -- 6) 2Y–10Y 국채 금리차
+    ('2Y–10Y Treasury Yield Spread',
+     'US',
+     'Computed',
+     'Difference between 2-year and 10-year U.S. Treasury yields',
+     'DGS2MINUSDGS10',
+     'D',
+     'bps',
+     NULL,
+     'yield curve',
+     NULL,
+     NULL,
+     TRUE,
+     'DGS2 – DGS10 로 계산'),
+    ('2Y Treasury Yield',
+     'US',
+     'FRED',
+     '2-year U.S. Treasury constant maturity yield',
+     'DGS2',
+     'D',
+     'percent',
+     NULL, -- release_lag_days
+     'yield',
+     'https://fred.stlouisfed.org/series/DGS2',
+     NULL, -- next_release_date
+     TRUE, -- is_active
+     '2년물 금리' -- notes
+    ),
+    -- 8) 10Y Treasury Yield
+    ('10Y Treasury Yield',
+     'US',
+     'FRED',
+     '10-year U.S. Treasury constant maturity yield',
+     'DGS10',
+     'D',
+     'percent',
+     NULL,
+     'yield',
+     'https://fred.stlouisfed.org/series/DGS10',
+     NULL,
+     TRUE,
+     '10년물 금리',);
+
 
 -- 가격 및 거래량 데이터 (시계열)
 CREATE TABLE price_data
